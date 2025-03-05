@@ -1,13 +1,14 @@
 # app.R
-library(shiny)
-library(tidyverse)
-library(DT)
-library(knitr)
-library(kableExtra)
-library(tidyllm)
-library(shinythemes)
-library(arrow)
-library(here)
+pacman::p_load(shiny,
+               tidyverse,
+               DT,
+               knitr,
+               kableExtra,
+               tidyllm,
+               shinythemes,
+               arrow,
+               here,
+               shinycssloaders)
 
 # Load your embedded articles dataset
 embedded_collection <- here("embedded_articles") |>
@@ -181,7 +182,7 @@ ui <- fluidPage(
     column(
       width = 9,
       style = "vertical-align: top;",
-      DTOutput("results")
+      withSpinner(DTOutput("results"), type = 6, color = "#555")
     )
   )
 )

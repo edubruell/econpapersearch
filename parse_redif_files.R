@@ -178,6 +178,11 @@ redif_files <- journal_base |>
     
     })
   
+# Create rds_archive folder if it doesn't exist
+if (!dir.exists(here("rds_archive"))) {
+  dir.create(here("rds_archive"))
+}
+
 redif_files |> 
   arrange(journal_code) |>
   #filter(str_detect(journal_code,"zewdip")) |>
