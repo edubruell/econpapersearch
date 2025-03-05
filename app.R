@@ -70,22 +70,27 @@ embedded_collection <- here("embedded_articles") |>
   left_join(read_parquet(here("journal_urls.parquet")),by = "Handle")
 
 
-
 # Define available journals from the dataset (assuming 'series' holds journal info)
 journals <- sort(unique(embedded_collection$journal))
 
-# Define a function to calculate cosine similarity
-cosine_similarity <- function(vec1, vec2) {
-  sum(vec1 * vec2) / (sqrt(sum(vec1^2)) * sqrt(sum(vec2^2)))
-}
-
-# Sort articles by semantic similarity
+# Define the second semantic sort function using matrix operations
 semantic_sort <- function(.query, .embedded_collection) {
-  query_embedding <- ollama_embedding(.query, .model = "mxbai-embed-large")
+  # 1. Extract the query embedding as a numeric vector
+  query_vec <- unlist(ollama_embedding(.query, .model = "mxbai-embed-large")$embeddings)
+  query_norm <- sqrt(sum(query_vec^2))
+  
+  # 2. Convert list-column of embeddings to a numeric matrix
+  embedding_mat <- do.call(rbind, lapply(.embedded_collection$embeddings, unlist))
+  
+  # 3. Compute row norms and dot products in one go
+  row_norms <- sqrt(rowSums(embedding_mat^2))
+  dot_products <- embedding_mat %*% query_vec
+  
+  # 4. Calculate cosine similarities
+  similarities <- as.vector(dot_products) / (row_norms * query_norm)
   
   .embedded_collection %>%
-    mutate(similarity = map_dbl(embeddings, 
-                                ~cosine_similarity(unlist(query_embedding$embeddings), unlist(.x)))) %>%
+    mutate(similarity = similarities) %>%
     arrange(desc(similarity))
 }
 
