@@ -122,7 +122,7 @@ no_dup <- full_article_db |>
   left_join(handle_codes_journals, by = "Handle") |>
   mutate(across(where(is.character),str_trim),
          journal_code = str_to_lower(journal_code) |> str_trim()) |>
-  left_join(haven::read_dta(here("journals_synced.dta")) |>
+  left_join(read_csv(here::here("journals.csv")) |>
               transmute(archive,
                         journal_code = journal,
                         journal = long_name), 

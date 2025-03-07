@@ -77,80 +77,80 @@ repec_ftp_listing <- function(.archive, .journal = NULL) {
 
 
 journals <- tribble(
-  ~archive, ~journal, ~long_name,
+  ~archive, ~journal, ~long_name, ~category,
   #TOP 5
-  "aea",   "aecrev"  , "American Economic Review",                                           
-  "aea",   "aerins"  , "American Economic Review: Insights",                                            
-  "oup",    "qjecon", "Quarterly Journal of Economics",
-  "ucp",    "jpolec",  "Journal of Political Economy (JPE)",
-  "ucp",    "jpemic",  "Journal of Political Economy: Microeconomics (JPE Micro)",
-  "ucp",    "jpemac",  "Journal of Political Economy: Macroeconomics (JPE Macro)",
-  "oup",    "restud", "Review of Economic Studies",
-  "ecm",    "emetrp", "Econometrica",
-  "wly",    "emetrp", "Econometrica",
+  "aea",   "aecrev"  , "American Economic Review", "Top 5 Journals",                                           
+  "aea",   "aerins"  , "American Economic Review: Insights", "Top 5 Journals",                                            
+  "oup",    "qjecon", "Quarterly Journal of Economics", "Top 5 Journals",
+  "ucp",    "jpolec",  "Journal of Political Economy (JPE)", "Top 5 Journals",
+  "ucp",    "jpemic",  "Journal of Political Economy: Microeconomics (JPE Micro)", "Top 5 Journals",
+  "ucp",    "jpemac",  "Journal of Political Economy: Macroeconomics (JPE Macro)", "Top 5 Journals",
+  "oup",    "restud", "Review of Economic Studies", "Top 5 Journals",
+  "ecm",    "emetrp", "Econometrica", "Top 5 Journals",
+  "wly",    "emetrp", "Econometrica", "Top 5 Journals",
   
   #AEA Journals
-  "aea",   "aejapp",   "American Economic Journal: Applied Economics",                                           
-  "aea",   "aejmac",   "American Economic Journal: Macroeconomics",                                             
-  "aea",   "aejmic",   "American Economic Journal: Microeconomics",                                              
-  "aea",   "aejpol",   "American Economic Journal: Economic Policy",    
-  "aea",   "apandp"  , "American Economic Review: P&P",                                           
-  "aea",   "jeclit"  , "Journal of Economic Literature",                                            
-  "aea",   "jecper" , "Journal of Economic Perspectives",
-  
+  "aea",   "aejapp",   "American Economic Journal: Applied Economics", "AEJs",                                           
+  "aea",   "aejmac",   "American Economic Journal: Macroeconomics", "AEJs",                                             
+  "aea",   "aejmic",   "American Economic Journal: Microeconomics", "AEJs",                                              
+  "aea",   "aejpol",   "American Economic Journal: Economic Policy", "AEJs",    
+  "aea",   "apandp"  , "American Economic Review: P&P", "AEJs",                                           
+  "aea",   "jeclit"  , "Journal of Economic Literature", "AEJs",                                            
+  "aea",   "jecper" , "Journal of Economic Perspectives", "AEJs",
   
   #TOP General Interest
-  "oup",    "revfin", "Review of Finance",
-  "tpr",    "jeurec", "Journal of the European Economic Association",
-  "oup",    "jeurec", "Journal of the European Economic Association",
-  "oup",    "econjl", "The Economic Journal",
-  "tpr",    "restat", "Review of Economics and Statistics (RESTAT)",
+  "oup",    "revfin", "Review of Finance", "General Interest",
+  "tpr",    "jeurec", "Journal of the European Economic Association", "General Interest",
+  "oup",    "jeurec", "Journal of the European Economic Association", "General Interest",
+  "oup",    "econjl", "The Economic Journal", "General Interest",
+  "tpr",    "restat", "Review of Economics and Statistics (RESTAT)", "General Interest",
   
   #Top Field Journals
-  "ucp",    "jlabec", "Journal of Labor Economics (JOLE)",
-  "eee",    "pubeco", "Journal of Public Economics",
-  "oup",    "jecgeo", "Journal of Economic Geography",
-  "uwp",    "jhriss", "Journal of Human Resources",
-  "eee",    "juecon", "Journal of Urban Economics",
-  "kap",    "jecgro", "Journal of Economic Growth",
-  "eee",    "jhecon", "Journal of Health Economics",
-  "oup",    "ecpoli", "Economic Policy",
-  "oup",    "emjrnl", "Econometrics Journal",
-  "eee",    "econom", "Journal of Econometrics",
-  "eee",    "respol", "Research Policy",
-  "cup",    "jechis", "Journal of Economic History",
-  "eee",    "jeeman", "Journal of Environmental Economics and Management",
-  "eee",    "eneeco", "Energy Economics",
-  "oup",    "jfinec", "Journal of Financial Economics (JFE)",
-  "eee",    "jetheo", "Journal of Economic Theory (JET)",
+  "ucp",    "jlabec", "Journal of Labor Economics (JOLE)", "Top Field Journals (A)",
+  "eee",    "pubeco", "Journal of Public Economics", "Top Field Journals (A)",
+  "oup",    "jecgeo", "Journal of Economic Geography", "Second in Field Journals (B)",
+  "uwp",    "jhriss", "Journal of Human Resources", "Top Field Journals (A)",
+  "eee",    "juecon", "Journal of Urban Economics", "Top Field Journals (A)",
+  "kap",    "jecgro", "Journal of Economic Growth", "Second in Field Journals (B)",
+  "eee",    "jhecon", "Journal of Health Economics", "Top Field Journals (A)",
+  "oup",    "ecpoli", "Economic Policy", "General Interest",
+  "oup",    "emjrnl", "Econometrics Journal", "Top Field Journals (A)",
+  "eee",    "econom", "Journal of Econometrics", "Second in Field Journals (B)",
+  "eee",    "respol", "Research Policy", "Top Field Journals (A)",
+  "cup",    "jechis", "Journal of Economic History", "Top Field Journals (A)",
+  "eee",    "jeeman", "Journal of Environmental Economics and Management", "Top Field Journals (A)",
+  "eee",    "eneeco", "Energy Economics", "Second in Field Journals (B)",
+  "oup",    "jfinec", "Journal of Financial Economics (JFE)", "General Interest",
+  "eee",    "jetheo", "Journal of Economic Theory (JET)", "Top Field Journals (A)",
   
   #Solid B Journals
-  "eee",    "eecrev", "European Economic Review",
-  "eee",    "labeco", "Labour Economics",
-  "spr",    "jopoec", "Journal of Population Economics",
-  "jae",    "japmet", "Journal of Applied Econometrics",
-  "wly",    "japmet", "Journal of Applied Econometrics",
-  "eee",    "jeborg", "Journal of Economic Behavior & Organization (JEBO)",
+  "eee",    "eecrev", "European Economic Review", "Second in Field Journals (B)",
+  "eee",    "labeco", "Labour Economics", "Second in Field Journals (B)",
+  "spr",    "jopoec", "Journal of Population Economics", "Second in Field Journals (B)",
+  "jae",    "japmet", "Journal of Applied Econometrics", "Second in Field Journals (B)",
+  "wly",    "japmet", "Journal of Applied Econometrics", "Second in Field Journals (B)",
+  "eee",    "jeborg", "Journal of Economic Behavior & Organization (JEBO)", "Second in Field Journals (B)",
   
   #WP Series
-  "nbr",     "nberwo",  "NBER Working Papers",
-  "zbw",     "zewdip",  "ZEW Discussion Papers",
-  "diw",     "diwsop",  "SOEPpapers",
-  "diw",     "diwwpp",  "Discussion Papers of DIW Berlin",
-  "iza",     "izadps",  "IZA Discussion Papers",
-  "ces",     "ceswps",  "CESifo Working Paper Series",
+  "nbr",     "nberwo",  "NBER Working Papers", "Working Paper Series",
+  "zbw",     "zewdip",  "ZEW Discussion Papers", "Working Paper Series",
+  "diw",     "diwsop",  "SOEPpapers", "Working Paper Series",
+  "diw",     "diwwpp",  "Discussion Papers of DIW Berlin", "Working Paper Series",
+  "iza",     "izadps",  "IZA Discussion Papers", "Working Paper Series",
+  "ces",     "ceswps",  "CESifo Working Paper Series", "Working Paper Series",
+  "iab",     "iabdpa",  "IAB Discussion Papers", "Working Paper Series"
 )
 
+#Write journals to disk 
+journals |> write_csv(here::here("journals.csv"))
 
-
-journals |>
+read_csv(here::here("journals.csv")) |>
   pwalk(function(archive, journal, long_name) {
     message("Syncing: ", long_name)
     sync_repec_folder(archive, journal)  
   })
 
-#Write journals to disk once syncing was done
-journals |> haven::write_dta(here("journals_synced.dta"))
+
 
 #sync_repec_folder("oup", "restud")  
 

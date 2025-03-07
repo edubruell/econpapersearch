@@ -11,82 +11,27 @@ pacman::p_load(shiny,
                shinycssloaders)
 
 # Load your embedded articles dataset
+journal_list <- read_csv(here::here("journals.csv")) |> 
+  distinct(journal=long_name, category)
+
+journals <- journal_list$journal
+
 embedded_collection <- here("embedded_articles") |>
   open_dataset() |>
   collect()  |> 
-  mutate(category = case_when(
-  journal %in% c("American Economic Review",                          
-                 "American Economic Review: Insights",  
-                 "Econometrica",   
-                 "Review of Economic Studies",   
-                 "Journal of Political Economy (JPE)",
-                 "Quarterly Journal of Economics"                    
-  ) ~ "Top 5 Journals",
-  
-  journal %in% c("American Economic Journal: Applied Economics",      
-                 "American Economic Journal: Economic Policy",        
-                 "American Economic Journal: Macroeconomics",         
-                 "American Economic Journal: Microeconomics",
-                 "American Economic Review: P&P",
-                 "Journal of Economic Literature",                   
-                 "Journal of Economic Perspectives") ~ "AEJs",
-  
-  journal %in% c("Review of Economics and Statistics (RESTAT)",       
-                 "The Economic Journal",    
-                 "Economic Policy", 
-                 "Journal of the European Economic Association",
-                 "Journal of Financial Economics (JFE)") ~ "General Interest",
-  
-  journal %in% c(  "Journal of Economic Theory (JET)", 
-                   "Journal of Labor Economics (JOLE)",                 
-                   "Journal of Economic History",                       
-                   "Journal of Environmental Economics and Management", 
-                   "Journal of Health Economics",                       
-                   "Journal of Human Resources",                        
-                   "Journal of Public Economics",                       
-                   "Journal of Urban Economics",  
-                   "Research Policy",  
-                   "Econometrics Journal") ~ "Top Field Journals (A)",
-  
-  journal %in% c("Journal of Population Economics",                   
-                 "Labour Economics",                                  
-                 "Journal of Economic Growth",                        
-                 "Energy Economics",                                  
-                 "European Economic Review",                          
-                 "Journal of Applied Econometrics",                   
-                 "Journal of Econometrics",                           
-                 "Journal of Economic Behavior & Organization (JEBO)",
-                 "Journal of Economic Geography" ) ~ "Second in Field Journals (B)",
-  
-  journal %in% c("CESifo Working Paper Series",                       
-                 "Discussion Papers of DIW Berlin", 
-                 "ZEW Discussion Papers", 
-                 "SOEPpapers",                                        
-                 "NBER Working Papers",
-                 "IZA Discussion Papers") ~   "Working Paper Series",                             
-  
-  TRUE ~ "Second in Field Journals (B)"
-)) |>
-  left_join(read_parquet(here("journal_urls.parquet")),by = "Handle")
-
-
-# Define available journals from the dataset (assuming 'series' holds journal info)
-journals <- sort(unique(embedded_collection$journal))
+  left_join(journal_list, by = "journal") |>
+  left_join(read_parquet(here("journal_urls.parquet")), by = "Handle")
 
 # Define the second semantic sort function using matrix operations
 semantic_sort <- function(.query, .embedded_collection) {
-  # 1. Extract the query embedding as a numeric vector
   query_vec <- unlist(ollama_embedding(.query, .model = "mxbai-embed-large")$embeddings)
   query_norm <- sqrt(sum(query_vec^2))
   
-  # 2. Convert list-column of embeddings to a numeric matrix
   embedding_mat <- do.call(rbind, lapply(.embedded_collection$embeddings, unlist))
   
-  # 3. Compute row norms and dot products in one go
   row_norms <- sqrt(rowSums(embedding_mat^2))
   dot_products <- embedding_mat %*% query_vec
   
-  # 4. Calculate cosine similarities
   similarities <- as.vector(dot_products) / (row_norms * query_norm)
   
   .embedded_collection %>%
