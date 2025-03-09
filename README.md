@@ -13,7 +13,7 @@ This Shiny app provides a proof-of-concept **semantic search engine** for econom
 The app relies on an automated monthly pipeline that:
 1. **Downloads** ReDIF files from RePEc FTP servers using **lftp**.
 2. **Parses & Cleans** metadata, extracting abstracts, authors, and journal details.
-3. **Generates Text Embeddings** using the **tidyllm** package and stores them in  **Arrow/Parquet** format.
+3. **Generates Text Embeddings** using the **tidyllm** package and stores them in a **DuckDB** database
 4. **Updates the Shiny App**, refreshing the dataset for the latest available articles.
 
 ## Usage
@@ -24,8 +24,8 @@ The app relies on an automated monthly pipeline that:
 
 ## Deployment & Automation
 - The app runs continuously, except for a short downtime during the **monthly update** (first Saturday-Sunday night of the month).
-- Data is stored using **Apache Arrow (Parquet format)** as a proof of concept. Using a real database would be an obvious improvement
-- The backend uses **Ollama embeddings (mxbai-embed-large)** in **tidyllm** for similarity computation.
+- Data is stored using **DuckDB**
+- Embeddings are calculated in **Ollama (mxbai-embed-large)** via **tidyllm** for semantic similarity computation.
 
 ### Example CRON Jobs
 To automate the update process, add the following entries to your crontab on the server you host the app:
