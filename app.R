@@ -1,43 +1,69 @@
 # app.R
-pacman::p_load(shiny,
+pacman::p_load(duckdb,
+               pool,
+               shiny,
                tidyverse,
                DT,
                knitr,
                kableExtra,
                tidyllm,
                shinythemes,
-               arrow,
                here,
                shinycssloaders)
 
-# Load your embedded articles dataset
-journal_list <- read_csv(here::here("journals.csv")) |> 
-  distinct(journal=long_name, category)
+# Connection pool for better concurrent access
+pool <- pool::dbPool(
+  drv = duckdb::duckdb(),
+  dbdir = "articles.duckdb",
+  max_connections = 5
+)
 
-journals <- journal_list$journal
-
-embedded_collection <- here("embedded_articles") |>
-  open_dataset() |>
-  collect()  |> 
-  left_join(journal_list, by = "journal") |>
-  left_join(read_parquet(here("journal_urls.parquet")), by = "Handle")
-
-# Define the second semantic sort function using matrix operations
-semantic_sort <- function(.query, .embedded_collection) {
+# Duckdb semantic sort using internal array functions
+semantic_sort <- function(.query, .pool, .journal_filter, .min_year) {
+  # Embed the query and extract the embedding vector
   query_vec <- unlist(ollama_embedding(.query, .model = "mxbai-embed-large")$embeddings)
-  query_norm <- sqrt(sum(query_vec^2))
   
-  embedding_mat <- do.call(rbind, lapply(.embedded_collection$embeddings, unlist))
+  # Determine the dimension of the embedding vector
+  dim_vec <- length(query_vec)
   
-  row_norms <- sqrt(rowSums(embedding_mat^2))
-  dot_products <- embedding_mat %*% query_vec
+  # Format the query vector as a fixed-length DOUBLE array literal
+  query_vec_str <- paste0(
+    "CAST(ARRAY[", 
+    paste(query_vec, collapse = ", "), 
+    "] AS DOUBLE[", dim_vec, "])"
+  )
   
-  similarities <- as.vector(dot_products) / (row_norms * query_norm)
+  # Build additional filter conditions
+  filter_conditions <- c()
+  if (!is.null(.min_year) && is.numeric(.min_year)) {
+    filter_conditions <- c(filter_conditions, sprintf("year >= %d", .min_year))
+  }
+  if (!is.null(.journal_filter) && length(.journal_filter) > 0) {
+    # Format the journal filter: assuming the column is called "journal_category"
+    categories_str <- paste(shQuote(.journal_filter), collapse = ", ")
+    filter_conditions <- c(filter_conditions, sprintf("category IN (%s)", categories_str))
+  }
   
-  .embedded_collection %>%
-    mutate(similarity = similarities) %>%
-    arrange(desc(similarity))
+  # Combine filters into a WHERE clause if needed
+  where_clause <- ""
+  if (length(filter_conditions) > 0) {
+    where_clause <- paste("WHERE", paste(filter_conditions, collapse = " AND "))
+  }
+  
+  # Build the full SQL query string.
+  # Note: stored embeddings are cast to a fixed-length DOUBLE array to match the query vector.
+  sql <- sprintf("
+    SELECT *,
+      array_cosine_similarity(embeddings::DOUBLE[%d], %s) AS similarity
+    FROM articles
+    %s
+    ORDER BY similarity DESC
+    ", dim_vec, query_vec_str, where_clause)
+  
+  # Execute and return the query result
+  pool::dbGetQuery(.pool, sql)
 }
+
 
 ui <- fluidPage(
   theme = shinytheme("flatly"),
@@ -132,7 +158,7 @@ ui <- fluidPage(
     column(
       width = 9,
       style = "vertical-align: top;",
-      withSpinner(DTOutput("results"), type = 6, color = "#555")
+      withSpinner(DTOutput("results"), type = 6)
     )
   )
 )
@@ -142,9 +168,10 @@ server <- function(input, output, session) {
   # Trigger the search when the button is clicked
   result <- eventReactive(input$search, {
     req(input$query)
-    res <- semantic_sort(input$query, embedded_collection |> 
-                           filter(category %in% input$journal_filter,
-                                  year >= input$min_year))
+    res <- semantic_sort(input$query,
+                         pool,
+                         input$journal_filter, 
+                         input$min_year)
     
     # Apply similarity quantile filtering if a restriction is set
     if (input$min_quantile != "none") {
