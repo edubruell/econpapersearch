@@ -117,6 +117,8 @@ cleaned_collection <- no_dup |>
   slice(1) |>
   ungroup() 
 
+
+
 # 2. Embedding
 #---------------------------------------------------------------
 
@@ -127,7 +129,7 @@ process_batch <- function(batch, con, num_batches){
     
     # Generate embeddings
     emb_result <- batch$abstract |>
-      ollama_embedding(.model = "mxbai-embed-large")
+      mistral_embedding()
     
     # Combine with original data
     batch_with_embeddings <- batch |>

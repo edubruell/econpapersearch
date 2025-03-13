@@ -145,6 +145,7 @@ journals <- tribble(
 journals |> write_csv(here::here("journals.csv"))
 
 read_csv(here::here("journals.csv")) |>
+  select(-category) |>
   pwalk(function(archive, journal, long_name) {
     message("Syncing: ", long_name)
     sync_repec_folder(archive, journal)  
