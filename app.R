@@ -11,6 +11,8 @@ pacman::p_load(duckdb,
                here,
                shinycssloaders)
 
+db_state <- file.info("articles_ollama.duckdb")$mtime |> as.character()
+
 # Connection pool for better concurrent access
 pool <- pool::dbPool(
   drv = duckdb::duckdb(),
@@ -213,8 +215,13 @@ ui <- fluidPage(
       style = "vertical-align: top;",
       withSpinner(DTOutput("results"), type = 5,color = "#006ab3")
     )
+  ),
+  div(
+    style = "position: relative; margin-top: 20px; padding: 10px; background-color: #f8f9fa; border-top: 1px solid #dee2e6; text-align: center; font-size: 12px; color: #6c757d;",
+    HTML(sprintf("&copy; Eduard Brüll | Database state: %s", db_state))
   )
 )
+
 
 server <- function(input, output, session) {
   
