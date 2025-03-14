@@ -11,6 +11,7 @@ This Shiny app provides a proof-of-concept **semantic search engine** for econom
 
 ## Data Pipeline
 The app relies on an automated monthly pipeline that:
+
 1. **Downloads** ReDIF files from RePEc FTP servers using **lftp**.
 2. **Parses & Cleans** metadata, extracting abstracts, authors, and journal details.
 3. **Generates Text Embeddings** using the **tidyllm** package and stores them in a **DuckDB** database
@@ -43,9 +44,9 @@ Example `update_pipeline.sh` script:
 sudo systemctl stop shiny-server
 
 # Run scripts
-Rscript /path/to/econpapersearch/sync_ftp_archive.R
-Rscript /path/to/econpapersearch/parse_redif_files.R
-Rscript /path/to/econpapersearch/embed_collection.R
+Rscript /srv/shiny-server/econpapersearch/sync_ftp_archive.R
+Rscript /srv/shiny-server/econpapersearch/parse_redif_files.R
+Rscript /srv/shiny-server/econpapersearch/embed_collection.R
 
 # Restart Shiny app
 sudo systemctl start shiny-server
