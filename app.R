@@ -68,6 +68,7 @@ semantic_sort <- function(.query, .pool, .journal_filter, .min_year) {
 ui <- fluidPage(
   theme = shinytheme("flatly"),
   tags$head(
+    tags$title("Semantic Paper Search"),
     tags$link(
       rel = "stylesheet",
       href = "https://cdn.datatables.net/buttons/2.3.6/css/buttons.bootstrap.min.css"
