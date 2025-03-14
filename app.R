@@ -210,9 +210,6 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
   
-  onStop(function() {
-    pool::poolClose(pool)
-  })
   
   # Trigger the search when the button is clicked
   result <- eventReactive(input$search, {
