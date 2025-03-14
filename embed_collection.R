@@ -5,7 +5,7 @@ pacman::p_load(here,
                duckdb)
 
 
-con <- dbConnect(duckdb(), dbdir = "articles.duckdb")
+con <- dbConnect(duckdb(), dbdir = "articles_ollama.duckdb")
 
 # Handle the case where the articles table doesn't exist yet
 if (dbExistsTable(con, "articles")) {
@@ -129,8 +129,9 @@ process_batch <- function(batch, con, num_batches){
     
     # Generate embeddings
     emb_result <- batch$abstract |>
-      mistral_embedding()
-    
+      ollama_embedding(.model="mxbai-embed-large")
+      #mistral_embedding()
+   
     # Combine with original data
     batch_with_embeddings <- batch |>
       bind_cols(emb_result |> select(-input))

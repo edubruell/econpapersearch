@@ -14,14 +14,14 @@ pacman::p_load(duckdb,
 # Connection pool for better concurrent access
 pool <- pool::dbPool(
   drv = duckdb::duckdb(),
-  dbdir = "articles.duckdb",
+  dbdir = "articles_ollama.duckdb",
   max_connections = 5
 )
 
 # Duckdb semantic sort using internal array functions
 semantic_sort <- function(.query, .pool, .journal_filter, .min_year) {
   # Embed the query and extract the embedding vector
-  query_vec <- unlist(ollama_embedding(.query, .model = "mxbai-embed-large")$embeddings)
+  query_vec <- unlist(ollama_embedding(.query,.model="mxbai-embed-large")$embeddings)
   
   # Determine the dimension of the embedding vector
   dim_vec <- length(query_vec)
