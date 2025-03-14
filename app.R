@@ -72,7 +72,28 @@ ui <- fluidPage(
       rel = "stylesheet",
       href = "https://cdn.datatables.net/buttons/2.3.6/css/buttons.bootstrap.min.css"
     ),
+    tags$link(
+        rel = "stylesheet",
+        href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      ),
+    tags$link(
+      rel = "stylesheet",
+      href = "https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@600;700&family=Lato:wght@300;400;600&display=swap"),
     tags$style(HTML("
+    /* Apply Lato as the main UI font */
+    body, .btn, .form-control, .well {
+      font-family: 'Lato', sans-serif !important;
+    }
+
+    /* Style the title panel with Josefin Sans */
+    h2 {
+      font-family: 'Josefin Sans', sans-serif !important;
+      font-size: 32px !important; 
+      font-weight: 600 !important;
+      color: #004f80 !important; /* Slightly darker blue for contrast */
+      letter-spacing: 1px;
+    }
+
       table.dataTable td, table.dataTable th {
         vertical-align: top !important;
       }
@@ -102,9 +123,33 @@ ui <- fluidPage(
         color: #fff !important;
         border-color: #555 !important;
       }
+      
+    table.dataTable tbody td a {
+      text-decoration: underline !important; /* Ensure it's underlined */
+      color: #006ab3 !important; /* Force ZEW blue */
+      transition: color 0.2s ease-in-out; /* Smooth hover effect */
+    }
+    
+    table.dataTable tbody td a:hover {
+      color: #0097ff !important; /* Light-blue on hover */
+    }
+
+    /* Fix issue with selected row link color */
+    table.dataTable tbody tr.selected a {
+      color: #006ab3 !important; /* Keep selected row links blue */
+    }
+
+    table.dataTable tbody tr.selected a:hover {
+      color: #0097ff !important; /* Hover effect still applies */
+    }
     "))
   ),
-  titlePanel("Semantic Article Search"),
+  titlePanel(
+    div(
+      tags$img(src = "logo_blue.png", height = "48px", style = "margin-right: 5px;"),
+      tags$span("Semantic Paper Search", style = "font-family: 'Josefin Sans', sans-serif; font-size: 32px; font-weight: 600; color: #004f80;  letter-spacing: 1px;")
+    )
+  ),
   
   fluidRow(
     column(
@@ -158,12 +203,16 @@ ui <- fluidPage(
     column(
       width = 9,
       style = "vertical-align: top;",
-      withSpinner(DTOutput("results"), type = 6)
+      withSpinner(DTOutput("results"), type = 5,color = "#006ab3")
     )
   )
 )
 
 server <- function(input, output, session) {
+  
+  onStop(function() {
+    pool::poolClose(pool)
+  })
   
   # Trigger the search when the button is clicked
   result <- eventReactive(input$search, {
@@ -182,7 +231,12 @@ server <- function(input, output, session) {
     
     res |>
       mutate(
-        pdf_link = paste0("<a href='", url, "' target='_blank'>",title,"</a>"),
+        pdf_link =  paste0(
+          "<a href='", url, "' target='_blank' class='dt-link'>",
+          "<i class='fa fa-download' style='color: black; margin-right: 5px;'></i>",
+          title,
+          "</a>"
+        ),
         abstract = stringr::str_wrap(abstract, width = 80),
         similarity = round(similarity, 4)
       ) |>
