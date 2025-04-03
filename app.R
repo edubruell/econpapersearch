@@ -67,6 +67,13 @@ ui <- fluidPage(
       rel = "stylesheet",
       href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
     ),
+    tags$link(rel = "icon", type = "image/x-icon", href = "favicon.ico"),
+    tags$link(rel = "icon", type = "image/png", sizes = "16x16", href = "favicon-16x16.png"),
+    tags$link(rel = "icon", type = "image/png", sizes = "32x32", href = "favicon-32x32.png"),
+    tags$link(rel = "apple-touch-icon", sizes = "180x180", href = "apple-touch-icon.png"),
+    tags$link(rel = "icon", sizes = "192x192", href = "android-chrome-192x192.png"),
+    tags$link(rel = "icon", sizes = "512x512", href = "android-chrome-512x512.png"),
+    tags$link(rel = "manifest", href = "site.webmanifest"),
     tags$link(
       rel = "stylesheet",
       href = "https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@600;700&family=Lato:wght@300;400;600&display=swap"),
