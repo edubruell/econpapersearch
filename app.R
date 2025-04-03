@@ -202,6 +202,7 @@ ui <- fluidPage(
                       "AEJs", 
                       "Top Field Journals (A)", 
                       "Second in Field Journals (B)",
+                      "Other Journals",
                       "Working Paper Series"),
           selected = c("Top 5 Journals", 
                        "General Interest",

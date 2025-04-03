@@ -29,95 +29,150 @@ if (dbExistsTable(con, "articles")) {
       category VARCHAR,
       url VARCHAR,
       authors VARCHAR,
+      bib_tex VARCHAR,
       embeddings DOUBLE[]
     )
   ")
   processed_handles <- character(0)
 }
 
+sys_parser <- "perl"
 
 # 1. Data Cleaning
 #---------------------------------------------------------------
 
-full_article_data <- here::here("rds_archive") |>
-  dir() |>
-  map_dfr(~read_rds(here("rds_archive",.x)))
+if(sys_parser == "rnative"){
+  full_article_data <- here::here("rds_archive") |>
+    dir() |>
+    map_dfr(~read_rds(here("rds_archive",.x)))
+  
+  handle_codes_journals <- full_article_data |> 
+    distinct(Handle,cr=`Creation-Date`) |>
+    transmute(Handle, cr, split = str_split(Handle,":")) |>
+    mutate(lengths = lengths(split)) |>
+    filter(lengths> 3) |>
+    mutate(archive = split |> map_chr(2),
+           journal_code = split |> map_chr(3),
+           year = str_extract(Handle,":y:\\d{4}:") |>
+             parse_number(),
+           #Unfortunately WP series have no year field!
+           #Discussion Paper series have their year in a date field
+           cr = str_sub(cr,1,4) |>
+             parse_number(),
+           is_series = if_else(is.na(year),TRUE,FALSE),
+           year = if_else(is.na(year),cr,year)) |>
+    select(Handle,archive,journal_code,year,is_series) |>
+    #Journal Articles since 1995 and discussion paper series since 2015
+    filter((year>=1995 & !is_series) | (year>=2010 & is_series))
+  
+  
+  no_dup <- full_article_data |>
+    filter(Handle %in% handle_codes_journals$Handle) |>
+    group_by(Handle) |>
+    slice(1) |>
+    ungroup() |>
+    select(-Year) |>
+    filter(!is.na(Abstract)) |>
+    transmute(Handle,title = Title, 
+              abstract = Abstract,
+              pages = Pages, 
+              vol = Volume, 
+              issue =Issue,
+              number = Number,
+              authors = Authors) |>
+    left_join(handle_codes_journals, by = "Handle") |>
+    mutate(across(where(is.character),str_trim),
+           journal_code = str_to_lower(journal_code) |> str_trim()) |>
+    left_join(read_csv(here::here("journals.csv")) |>
+                transmute(archive,
+                          journal_code = journal,
+                          journal = long_name,
+                          category), 
+              by = c("archive","journal_code")) 
+  
+  
+  authours_by_handle <- no_dup |>
+    unnest(authors) |>
+    unnest(authors) |>
+    group_by(Handle) |>
+    summarise(authors = str_c(authors,collapse="; ") |> str_trim())
+  
+  article_urls <- full_article_data |>
+    filter(Handle %in% handle_codes_journals$Handle) |>
+    group_by(Handle) |>
+    slice(1) |>
+    ungroup() |>
+    transmute(Handle=str_trim(Handle),Files,num_files = map_dbl(Files,ncol)) |>
+    unnest(Files) |>
+    select(Handle,url = `File-URL`, format = `File-Format`) |>
+    group_by(Handle) |>
+    slice(1) |>
+    ungroup() |>
+    distinct(Handle,url) 
+  
+  cleaned_collection <- no_dup |>
+    select(-authors) |>
+    left_join(authours_by_handle, by="Handle") |>
+    left_join(article_urls, by="Handle") |>
+    filter(!is.na(abstract),nchar(abstract)>1)  |>
+    group_by(Handle) |>
+    slice(1) |>
+    ungroup() |>
+    mutate(bib_tex="")
+  
+}
 
-handle_codes_journals <- full_article_data |> 
-  distinct(Handle,cr=`Creation-Date`) |>
-  transmute(Handle, cr, split = str_split(Handle,":")) |>
-  mutate(lengths = lengths(split)) |>
-  filter(lengths> 3) |>
-  mutate(archive = split |> map_chr(2),
-         journal_code = split |> map_chr(3),
-         year = str_extract(Handle,":y:\\d{4}:") |>
-           parse_number(),
-         #Unfortunately WP series have no year field!
-         #Discussion Paper series have their year in a date field
-         cr = str_sub(cr,1,4) |>
-           parse_number(),
-         is_series = if_else(is.na(year),TRUE,FALSE),
-         year = if_else(is.na(year),cr,year)) |>
-  select(Handle,archive,journal_code,year,is_series) |>
-  #Journal Articles since 1995 and discussion paper series since 2015
-  filter((year>=1995 & !is_series) | (year>=2015 & is_series))
+if(sys_parser == "perl"){
+  full_article_data <- here::here("rds_archivep") |>
+    dir() |>
+    map_dfr(~read_rds(here("rds_archivep",.x)))
+  
+  #Use only unique ids
+  no_dup <- full_article_data |>
+    group_by(Handle) |>
+    slice(1) |>
+    ungroup()
+  
+  collection_all_files <- no_dup |>
+    select(Handle,
+           title,
+           abstract,
+           pages,
+           vol =volume,
+           issue,
+           number,
+           archive,
+           journal_code,
+           year,
+           is_series,
+           authors = authors_string,
+           bib_tex = bib_tex,
+           file) |>
+    #Journal Articles since 1995 and discussion paper series since 2010
+    filter((year>=1995 & !is_series) | (year>=2010 & is_series)) |>
+    #At least 100 characters per abstract
+    filter(nchar(abstract)>100) |>
+    left_join(read_csv(here::here("journals.csv")) |>
+                transmute(archive,
+                          journal_code = journal,
+                          journal = long_name,
+                          category), 
+              by = c("archive","journal_code")) 
 
-
-no_dup <- full_article_data |>
-  filter(Handle %in% handle_codes_journals$Handle) |>
-  group_by(Handle) |>
-  slice(1) |>
-  ungroup() |>
-  select(-Year) |>
-  filter(!is.na(Abstract)) |>
-  transmute(Handle,title = Title, 
-            abstract = Abstract,
-            pages = Pages, 
-            vol = Volume, 
-            issue =Issue,
-            number = Number,
-            authors = Authors) |>
-  left_join(handle_codes_journals, by = "Handle") |>
-  mutate(across(where(is.character),str_trim),
-         journal_code = str_to_lower(journal_code) |> str_trim()) |>
-  left_join(read_csv(here::here("journals.csv")) |>
-              transmute(archive,
-                        journal_code = journal,
-                        journal = long_name,
-                        category), 
-            by = c("archive","journal_code")) 
-
-
-authours_by_handle <- no_dup |>
-  unnest(authors) |>
-  unnest(authors) |>
-  group_by(Handle) |>
-  summarise(authors = str_c(authors,collapse="; ") |> str_trim())
-
-article_urls <- full_article_data |>
-  filter(Handle %in% handle_codes_journals$Handle) |>
-  group_by(Handle) |>
-  slice(1) |>
-  ungroup() |>
-  transmute(Handle=str_trim(Handle),Files) |>
-  unnest(Files) |>
-  select(Handle,url = `File-URL`, format = `File-Format`) |>
-  filter(format != "application/zip") |>
-  group_by(Handle) |>
-  slice(1) |>
-  ungroup() |>
-  distinct(Handle,url) 
-
-cleaned_collection <- no_dup |>
-  select(-authors) |>
-  left_join(authours_by_handle, by="Handle") |>
-  left_join(article_urls, by="Handle") |>
-  filter(!is.na(abstract),nchar(abstract)>1)  |>
-  group_by(Handle) |>
-  slice(1) |>
-  ungroup() 
-
-
+  article_urls <- collection_all_files |>
+    select(Handle,file) |>
+    unnest(file) |>
+    unnest(cols=c("format","url")) |>
+    group_by(Handle) |>
+    slice(1) |>
+    ungroup() |>
+    select(Handle,url)
+  
+  cleaned_collection <- collection_all_files |>
+    select(-file) |>
+    left_join(article_urls, by="Handle")
+  
+}
 
 # 2. Embedding
 #---------------------------------------------------------------
@@ -151,13 +206,12 @@ process_batch <- function(batch, con, num_batches){
     SELECT 
       Handle, title, abstract, pages, vol, issue, number, 
       archive, journal_code, year, is_series, journal, 
-      category, url, authors, embeddings
+      category, url, authors, bib_tex, embeddings
     FROM temp_batch
   ")
     
     dbExecute(con, "DROP TABLE temp_batch")
 }
-
 
 to_embed <- cleaned_collection |>
   filter(!Handle %in% processed_handles)

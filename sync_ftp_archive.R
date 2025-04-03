@@ -104,24 +104,39 @@ journals <- tribble(
   "oup",    "jeurec", "Journal of the European Economic Association", "General Interest",
   "oup",    "econjl", "The Economic Journal", "General Interest",
   "tpr",    "restat", "Review of Economics and Statistics (RESTAT)", "General Interest",
+  "bla",    "jfinan",   "Journal of Finance", "General Interest",
+  "oup",    "rfinst",   "Review of Financial Studies", "General Interest",
+  "eee",    "jfinec",   "Journal of Financial Economics", "General Interest",
+  "oup",    "rcorpf",   "Review of Corporate Finance Studies", "General Interest",
+  "anr",    "reveco",   "Annual Review of Economics", "General Interest",
+  #"nat",    "nature",  "Nature", "General Interest",
   
+
   #Top Field Journals
   "ucp",    "jlabec", "Journal of Labor Economics (JOLE)", "Top Field Journals (A)",
   "eee",    "pubeco", "Journal of Public Economics", "Top Field Journals (A)",
-  "oup",    "jecgeo", "Journal of Economic Geography", "Second in Field Journals (B)",
   "uwp",    "jhriss", "Journal of Human Resources", "Top Field Journals (A)",
   "eee",    "juecon", "Journal of Urban Economics", "Top Field Journals (A)",
-  "kap",    "jecgro", "Journal of Economic Growth", "Second in Field Journals (B)",
+  "eee",    "jaecon",   "Journal of Accounting and Economics", "Top Field Journals (A)",
+  "bla",    "joares",   "Journal of Accounting Research", "Top Field Journals (A)",
+  "spr",    "reaccs",   "Review of Accounting Studies", "Top Field Journals (A)",
+  "eee",    "moneco",   "Journal of Monetary Economics", "Top Field Journals (A)",
+  "eee",    "jfinin",   "Journal of Financial Intermediation", "Top Field Journals (A)",
+  "taf",    "jnlbes",   "Journal of Business and Economic Statistics", "Top Field Journals (A)",
+  "cup",    "jfinqa",     "Journal of Financial and Quantitative Analysis", "Top Field Journals (A)",
+  "inm",    "ormksc",   "Marketing Science", "Top Field Journals (A)",
+  "oup",    "jconrs",   "Journal of Consumer Research", "Top Field Journals (A)",
+  "inm",    "ormsom",   "Manufacturing and Service Operations Management", "Top Field Journals (A)",
   "eee",    "jhecon", "Journal of Health Economics", "Top Field Journals (A)",
   "oup",    "ecpoli", "Economic Policy", "General Interest",
   "oup",    "emjrnl", "Econometrics Journal", "Top Field Journals (A)",
-  "eee",    "econom", "Journal of Econometrics", "Second in Field Journals (B)",
   "eee",    "respol", "Research Policy", "Top Field Journals (A)",
   "cup",    "jechis", "Journal of Economic History", "Top Field Journals (A)",
   "eee",    "jeeman", "Journal of Environmental Economics and Management", "Top Field Journals (A)",
   "eee",    "eneeco", "Energy Economics", "Second in Field Journals (B)",
-  "oup",    "jfinec", "Journal of Financial Economics (JFE)", "General Interest",
   "eee",    "jetheo", "Journal of Economic Theory (JET)", "Top Field Journals (A)",
+  "oup",    "rasset",   "Review of Asset Pricing Studies", "Top Field Journals (A)",
+  "inm",    "ormnsc", "Managment Science", "Top Field Journals (A)",
   
   #Solid B Journals
   "eee",    "eecrev", "European Economic Review", "Second in Field Journals (B)",
@@ -130,6 +145,28 @@ journals <- tribble(
   "jae",    "japmet", "Journal of Applied Econometrics", "Second in Field Journals (B)",
   "wly",    "japmet", "Journal of Applied Econometrics", "Second in Field Journals (B)",
   "eee",    "jeborg", "Journal of Economic Behavior & Organization (JEBO)", "Second in Field Journals (B)",
+  "kap",    "jecgro", "Journal of Economic Growth", "Second in Field Journals (B)",
+  "eee",    "econom", "Journal of Econometrics", "Second in Field Journals (B)",
+  "oup",    "jecgeo", "Journal of Economic Geography", "Second in Field Journals (B)",
+  "wly",    "quante",  "Quantitative Economics", "Second in Field Journals (B)",  
+  "eee",    "deveco",  "Journal of Development Economics", "Second in Field Journals (B)",  
+  "rje",    "randje",  "RAND Journal of Economics", "Second in Field Journals (B)",  
+  "the",    "publsh",  "Theoretical Economics", "Second in Field Journals (B)",  
+  "kap",    "sbusec",  "Small Business Economics", "Second in Field Journals (B)",  
+  "wly",    "iecrev",  "International Economic Review", "Second in Field Journals (B)",  
+  "kap",    "expeco",  "Experimental Economics", "Second in Field Journals (B)",  
+  "eee",    "enepol",  "Energy Policy", "Second in Field Journals (B)",  
+  
+  #Other Journals
+  "bpj",    "germec",  "German Economic Review", "Other Journals",
+  "eee",    "ecolet",  "Economic Letters", "Other Journals",
+  "spr",    "jregsc",  "Journal of Regional Science", "Other Journals",  
+  "oup",    "oxecpp",  "Oxford Economic Papers", "Other Journals",  
+  "spr",    "empeco",  "Empirical Economics", "Other Journals",  
+  "oup",    "wbecrv",  "The World Bank Economic Review", "Other Journals",
+  "bla",    "obuest",  "Oxford Bulletin of Economics and Statistics", "Other Journals",
+  "bla",    "scandj",  "Scandinavian Journal of Economics", "Other Journals",
+  "jns",    "jbstat",  "Journal of Economics and Statistics (Jahrbuecher fuer Nationaloekonomie und Statistik)","Other Journals",
   
   #WP Series
   "nbr",     "nberwo",  "NBER Working Papers", "Working Paper Series",
@@ -140,6 +177,12 @@ journals <- tribble(
   "ces",     "ceswps",  "CESifo Working Paper Series", "Working Paper Series",
   "iab",     "iabdpa",  "IAB Discussion Papers", "Working Paper Series"
 )
+
+#Test whether some journals are double in the list
+journals |>
+  count(repec_id=paste0(archive,":",journal)) |>
+  filter(n!=1)
+
 
 #Write journals to disk 
 journals |> write_csv(here::here("journals.csv"))
@@ -152,6 +195,32 @@ read_csv(here::here("journals.csv")) |>
   })
 
 
+#Manually load incomplete syncs after first load
+if(FALSE){
+  loaded_journals <- fs::dir_info(here("REPEC")) |>
+    transmute(path=as.character(path)) |>
+    map_dfr(fs::dir_info) |>
+    transmute(path=as.character(path),
+              archive = str_extract(path,"REPEC/[A-Za-z]{3}") |> 
+                   str_extract("/[A-Za-z]{3}")  |>
+                   str_remove("/"),
+              journal =  str_extract(path,"REPEC/[A-Za-z]{3}/[A-Za-z]{6}") |>
+                str_extract("/[A-Za-z]{6}")  |>
+                str_remove("/")
+              ) 
+  
+  read_csv(here::here("journals.csv")) |>
+    select(-category) |>
+    left_join(loaded_journals) |>
+    filter(is.na(path)) |>
+    select(-path) |>
+    pwalk(function(archive, journal, long_name) {
+      message("Syncing: ", long_name)
+      sync_repec_folder(archive, journal)  
+    })
+} 
+  
+  
 
 #sync_repec_folder("oup", "restud")  
 
