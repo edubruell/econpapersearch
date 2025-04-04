@@ -1,8 +1,11 @@
 # econpapersearch: Semantic Article Search for Economic Research
 
-This Shiny app provides a proof-of-concept **semantic search engine** for economic research articles indexed in RePEc. It allows users to find relevant papers based on abstract similarity using **LLM-powered embeddings**. 
+This Shiny app provides a proof-of-concept **semantic search engine** for economic research articles indexed in RePEc. It allows users to find relevant papers based on abstract similarity using **LLM-powered embeddings**.   
+🔍 **Try it now:** [https://econpapers.eduard-bruell.de/](https://econpapers.eduard-bruell.de/)
 
 ![Semantic Article Search Screenshot](images/screenshot.png)
+
+
 
 ## Features
 - **Semantic Search:** Paste an abstract or search text, and the app retrieves semantically similar articles.
@@ -28,6 +31,28 @@ The app relies on an automated monthly pipeline that:
 - Data is stored using **DuckDB**
 - Embeddings are calculated in **Ollama (mxbai-embed-large)** via **tidyllm** for semantic similarity computation.
 
+## Backends
+
+The app supports two interchangeable backends for parsing ReDIF metadata files:
+
+### 1. Perl-Based Backend (Recommended)
+
+- **File:** `parse_rdf_perl_backend.R`
+- Uses the RePEc `ReDIF-perl` tools to convert `.redif` files into structured JSON
+  - **Pipeline:** `.rdf/.redif` → `JSON` → `RDS` → `DuckDB`
+- More robust to formatting issues and edge cases.
+- Supports BibTeX citation generation.
+- Requires a local installation of Perl and `ReDIF-perl`
+
+### 2. R-Native Backend
+
+- **File:** `parse_redif_files.R`
+- Pure R implementation, no external dependencies.
+- Faster and simpler to run.
+- Less robust to encoding quirks and non-standard fields.
+- Does not currently generate BibTeX entries or reliably parse complex author metadata.
+
+
 ### Example CRON Jobs
 To automate the update process, add the following entries to your crontab on the server you host the app:
 
@@ -45,7 +70,7 @@ sudo systemctl stop shiny-server
 
 # Run scripts
 Rscript /srv/shiny-server/econpapersearch/sync_ftp_archive.R
-Rscript /srv/shiny-server/econpapersearch/parse_redif_files.R
+Rscript /srv/shiny-server/econpapersearch/parse_rdf_perl_backend.R
 Rscript /srv/shiny-server/econpapersearch/embed_collection.R
 
 # Restart Shiny app

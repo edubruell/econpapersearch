@@ -170,7 +170,8 @@ if(sys_parser == "perl"){
   
   cleaned_collection <- collection_all_files |>
     select(-file) |>
-    left_join(article_urls, by="Handle")
+    left_join(article_urls, by="Handle") |>
+    mutate(year = str_replace_all(year,"Forthcoming","2025"))
   
 }
 

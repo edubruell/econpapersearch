@@ -10,12 +10,15 @@ pacman::p_load(duckdb,
                here,
                shinycssloaders)
 
-db_state <- file.info("articles_ollama.duckdb")$mtime |> 
+#dbpath <- normalizePath("/srv/shiny-server/econpapersearch/articles_ollama.duckdb")
+dbpath <- "articles_ollama.duckdb"
+
+db_state <- file.info(dbpath)$mtime |> 
   as.character() |>
   str_extract("\\d{4}-\\d{2}-\\d{2}")
 
 pool <- pool::dbPool(
-  drv = duckdb::duckdb(),
+  drv = duckdb::duckdb(dbpath),
   dbdir = "articles_ollama.duckdb",
   max_connections = 5
 )
