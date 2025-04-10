@@ -244,6 +244,7 @@ dbExecute(con, "CREATE INDEX IF NOT EXISTS idx_category ON articles(category)")
 #Load vss and index the embeddings
 dbExecute(con, "LOAD vss;")
 dbExecute(con, "SET hnsw_enable_experimental_persistence=true;")
+dbExecute(con, "DROP INDEX IF EXISTS idx_hnsw;")
 dbExecute(con, "CREATE INDEX idx_hnsw ON articles USING HNSW (embeddings);")
 
 #Verify indices exist

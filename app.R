@@ -75,6 +75,7 @@ ui <- fluidPage(
       rel = "stylesheet",
       href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
     ),
+    tags$link(rel = "stylesheet", type = "text/css", href = "custom.css"),
     tags$link(rel = "icon", type = "image/x-icon", href = "favicon.ico"),
     tags$link(rel = "icon", type = "image/png", sizes = "16x16", href = "favicon-16x16.png"),
     tags$link(rel = "icon", type = "image/png", sizes = "32x32", href = "favicon-32x32.png"),
@@ -94,90 +95,6 @@ ui <- fluidPage(
           console.error('Copying failed: ', err);
         });
       });
-    ")),
-    tags$style(HTML("
-      body, .btn, .form-control, .well {
-        font-family: 'Lato', sans-serif !important;
-      }
-
-      h2 {
-        font-family: 'Josefin Sans', sans-serif !important;
-        font-size: 32px !important; 
-        font-weight: 600 !important;
-        color: #004f80 !important;
-        letter-spacing: 1px;
-      }
-
-      table.dataTable td, table.dataTable th {
-        vertical-align: top !important;
-      }
-
-      .btn-custom {
-        background-color: #555 !important;
-        color: #fff !important;
-        border: 1px solid #444 !important;
-        border-radius: 5px !important;
-        padding: 6px 12px !important;
-        font-size: 14px !important;
-      }
-
-      .btn-custom:hover {
-        background-color: #777 !important;
-        color: #fff !important;
-        border-color: #555 !important;
-      }
-
-      .dt-button.btn-custom {
-        background-color: #555 !important;
-        color: #fff !important;
-        border: 1px solid #444 !important;
-        border-radius: 5px !important;
-        padding: 6px 12px !important;
-        font-size: 14px !important;
-      }
-
-      .dt-button.btn-custom:hover {
-        background-color: #777 !important;
-        color: #fff !important;
-        border-color: #555 !important;
-      }
-
-      .btn-bibtex {
-        font-size: 12px;
-        padding: 3px 6px;
-        background-color: #ddd;
-        border: none;
-        border-radius: 4px;
-        color: #333;
-        cursor: pointer;
-        margin-top: 6px;
-      }
-
-      .btn-bibtex:hover {
-        background-color: #ccc;
-      }
-
-      table.dataTable tbody td a {
-        text-decoration: underline !important;
-        color: #006ab3 !important;
-        transition: color 0.2s ease-in-out;
-      }
-
-      table.dataTable tbody td a:hover {
-        color: #0097ff !important;
-      }
-
-      table.dataTable tbody tr.selected a {
-        color: #006ab3 !important;
-      }
-
-      table.dataTable tbody tr.selected a:hover {
-        color: #0097ff !important;
-      }
-
-      table.dataTable tbody tr.selected {
-        background-color: transparent !important;
-      }
     "))
   ),
   titlePanel(
