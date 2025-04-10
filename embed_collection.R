@@ -4,8 +4,15 @@ pacman::p_load(here,
                tidyllm,
                duckdb)
 
+#dbExecute(con, "INSTALL vss;
+#                LOAD vss;")
 
-con <- dbConnect(duckdb(), dbdir = "articles_ollama.duckdb")
+con <- dbConnect(duckdb(), dbdir = "articles_ollama_vss.duckdb")
+
+#Old database
+#con2 <- dbConnect(duckdb(), dbdir = "articles_ollama.duckdb")
+#df <- dbReadTable(con2, "articles")
+
 
 # Handle the case where the articles table doesn't exist yet
 if (dbExistsTable(con, "articles")) {
@@ -30,7 +37,7 @@ if (dbExistsTable(con, "articles")) {
       url VARCHAR,
       authors VARCHAR,
       bib_tex VARCHAR,
-      embeddings DOUBLE[]
+      embeddings FLOAT[1024]
     )
   ")
   processed_handles <- character(0)
@@ -234,17 +241,20 @@ batches |>
 # Create indexes if they don't exist
 dbExecute(con, "CREATE INDEX IF NOT EXISTS idx_year ON articles(year)")
 dbExecute(con, "CREATE INDEX IF NOT EXISTS idx_category ON articles(category)")
+#Load vss and index the embeddings
+dbExecute(con, "LOAD vss;")
+dbExecute(con, "SET hnsw_enable_experimental_persistence=true;")
+dbExecute(con, "CREATE INDEX idx_hnsw ON articles USING HNSW (embeddings);")
+
+#Verify indices exist
+dbGetQuery(con, "
+  SELECT *
+  FROM duckdb_indexes()
+  WHERE table_name = 'articles';
+")
 
 # Cleanup
 dbDisconnect(con)
-
-
-
-
-
-
-
-
 
 
 

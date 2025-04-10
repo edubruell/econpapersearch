@@ -11,7 +11,7 @@ pacman::p_load(duckdb,
                shinycssloaders)
 
 #dbpath <- normalizePath("/srv/shiny-server/econpapersearch/articles_ollama.duckdb")
-dbpath <- "articles_ollama.duckdb"
+dbpath <- "articles_ollama_vss.duckdb"
 
 db_state <- file.info(dbpath)$mtime |> 
   as.character() |>
@@ -19,44 +19,49 @@ db_state <- file.info(dbpath)$mtime |>
 
 pool <- pool::dbPool(
   drv = duckdb::duckdb(dbpath),
-  dbdir = "articles_ollama.duckdb",
+  dbdir = "articles_ollama_vss.duckdb",
   max_connections = 5
 )
 
-semantic_sort <- function(.query, .pool, .journal_filter, .min_year) {
-  query_vec <- unlist(ollama_embedding(.query,.model="mxbai-embed-large")$embeddings)
-  dim_vec <- length(query_vec)
-  query_vec_str <- paste0(
-    "CAST(ARRAY[", 
-    paste(query_vec, collapse = ", "), 
-    "] AS DOUBLE[", dim_vec, "])"
-  )
+# Warm up one connection to load extensions into the session's cache
+con <- poolCheckout(pool)
+DBI::dbExecute(con, "LOAD vss;")
+DBI::dbExecute(con, "SET hnsw_enable_experimental_persistence=true;")
+DBI::dbExecute(con, "SET max_expression_depth TO 2000;")
+poolReturn(con)
+
+semantic_sort <- function(.query, .pool, .journal_filter = NULL, .min_year = NULL, .max_k = 100) {
+  query_vec <- unlist(ollama_embedding(.query, .model = "mxbai-embed-large")$embeddings)
   
-  filter_conditions <- c()
-  if (!is.null(.min_year) && is.numeric(.min_year)) {
-    filter_conditions <- c(filter_conditions, sprintf("year >= %d", .min_year))
-  }
+  filters <- c()
+  if (!is.null(.min_year)) filters <- c(filters, sprintf("a.year >= %d", .min_year))
   if (!is.null(.journal_filter) && length(.journal_filter) > 0) {
-    categories_str <- paste(shQuote(.journal_filter), collapse = ", ")
-    filter_conditions <- c(filter_conditions, sprintf("category IN (%s)", categories_str))
+    cats <- paste(shQuote(.journal_filter), collapse = ", ")
+    filters <- c(filters, sprintf("a.category IN (%s)", cats))
   }
-  
-  where_clause <- ""
-  if (length(filter_conditions) > 0) {
-    where_clause <- paste("WHERE", paste(filter_conditions, collapse = " AND "))
-  }
+  where_clause <- if (length(filters)) paste("WHERE", paste(filters, collapse = " AND ")) else ""
   
   sql <- sprintf("
-    SELECT *,
-      array_cosine_similarity(embeddings::DOUBLE[%d], %s) AS similarity
-    FROM articles
+    SELECT a.title, a.year, a.authors, a.journal, a.category, a.url, a.bib_tex, a.abstract,
+           array_cosine_distance(a.embeddings, ?::FLOAT[1024]) AS similarity
+    FROM articles a
     %s
-    ORDER BY similarity DESC
-    ", dim_vec, query_vec_str, where_clause)
+    ORDER BY similarity ASC
+    LIMIT ?
+  ", where_clause)
   
-  pool::dbGetQuery(.pool, sql)
+  con <- poolCheckout(.pool)
+  DBI::dbExecute(con, "LOAD vss;")
+  DBI::dbExecute(con, "SET hnsw_enable_experimental_persistence = true;")
+  
+  stmt <- DBI::dbSendQuery(con, sql)
+  DBI::dbBind(stmt, list(list(query_vec), .max_k)) 
+  res <- DBI::dbFetch(stmt)                          
+  DBI::dbClearResult(stmt)
+  poolReturn(con)
+  
+  res
 }
-
 
 ui <- fluidPage(
   theme = shinytheme("flatly"),
@@ -189,13 +194,7 @@ ui <- fluidPage(
       wellPanel(
         h4("Enter Abstract Text"),
         textAreaInput("query", NULL, placeholder = "Paste your search text here...", rows = 8),
-        selectInput("min_quantile", "Minimum Similarity Quantile",
-                    choices = c("Top 0.5%" = "0.995", 
-                                "Top 1%"   = "0.99", 
-                                "Top 1.5%" = "0.985", 
-                                "Top 2%"   = "0.98", 
-                                "No restriction" = "none"),
-                    selected = "none"),
+        numericInput("max_k", "Search result limit:", value = 200, min = 1, max = 10000),
         numericInput("min_year", "Minimum Year:", value = 1995, min = 1995, max = as.integer(format(Sys.Date(), "%Y"))),
         checkboxGroupInput("journal_filter", "Select Journal Categories:",
                            choices = c("Top 5 Journals", "General Interest", "AEJs", 
@@ -221,17 +220,17 @@ ui <- fluidPage(
 server <- function(input, output, session) {
   result <- eventReactive(input$search, {
     req(input$query)
-    res <- semantic_sort(input$query, pool, input$journal_filter, input$min_year)
+    res <- semantic_sort(input$query, pool, input$journal_filter, input$min_year,input$max_k)
     
-    if (input$min_quantile != "none") {
-      quant_value <- as.numeric(input$min_quantile)
-      threshold <- quantile(res$similarity, quant_value)
-      res <- res |> filter(similarity > threshold)
-    }
+    #Fix bibtex - move this to pre-processing on next database update
+    res <- res |>
+      mutate(journal_bt = paste0("journal = {",journal,"}"),
+             bib_tex = str_replace(bib_tex,"journal = \\{\\}",journal_bt),
+             bib_tex = str_replace_all(bib_tex, "\\n\\s*\\n", "\n"))
     
     res |> mutate(
       Similarity = paste0(
-        round(similarity, 4), "<br/>",
+        round(1-similarity, 4), "<br/>",
         "<button class='btn-bibtex' data-bibtex-content='", 
         htmltools::htmlEscape(bib_tex), "'>",
         "<i class='fa fa-copy'></i>BibTeX</button>"
@@ -259,13 +258,8 @@ server <- function(input, output, session) {
       result(),
       escape = FALSE,
       selection = 'none',
-      extensions = 'Buttons',
       options = list(
         dom = 'Bfrtip',
-        buttons = list(
-          list(extend = 'copy', className = 'btn-custom'),
-          list(extend = 'excel', className = 'btn-custom')
-        ),
         pageLength = 20,
         autoWidth = TRUE,
         columnDefs = list(

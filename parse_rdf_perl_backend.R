@@ -102,7 +102,7 @@ post_process_entry <- function(entry){
   jel_char = ""
   if(!is.null(entry$`classification-jel`)){
     jel_list <- str_split(entry$`classification-jel`,pattern = " ") |> unlist()
-    jel_char <- entry$`classification-jel` |> unlist()
+    jel_char <- entry$`classification-jel` |> unlist() |> str_c(collapse = " ")
   }
   #Bibliographic info 
   journal_internal <- ""
@@ -202,9 +202,17 @@ if (!dir.exists(here("rds_archivep"))) {
   dir.create(here("rds_archivep"))
 }
 
+updated_today <- fs::dir_info(here("rds_archivep")) |>
+  filter(as_date(modification_time) == today()) |>
+  transmute(repo = str_remove(path,(here("rds_archivep")))|>
+              str_remove("/") |>
+              str_remove(".rds")) |>
+  pull(repo)
+
+
 paper_archives <- redif_files |> 
   #Uncomment this line if working incrementally
-  #filter(!(repo_id %in% str_remove(dir(here("rds_archivep")),".rds"))) |>
+  #filter(!(repo_id %in% updated_today)) |>
   arrange() |>
   group_by(repo_id) |>
   group_split()
@@ -226,5 +234,7 @@ paper_archives |>
   })
 
 
-
+#parse_redif_perl("/Users/ebr/Seafile/Meine Bibliothek/git_projects/econpapersearch/RePEc/qsh/wpaper/wpaper_50166.rdf") %>%
+#  .[620] |>
+#  map_dfr(post_process_entry)
   

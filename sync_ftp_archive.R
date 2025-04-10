@@ -104,29 +104,28 @@ journals <- tribble(
   "oup",    "jeurec", "Journal of the European Economic Association", "General Interest",
   "oup",    "econjl", "The Economic Journal", "General Interest",
   "tpr",    "restat", "Review of Economics and Statistics (RESTAT)", "General Interest",
-  "bla",    "jfinan",   "Journal of Finance", "General Interest",
-  "oup",    "rfinst",   "Review of Financial Studies", "General Interest",
-  "eee",    "jfinec",   "Journal of Financial Economics", "General Interest",
-  "oup",    "rcorpf",   "Review of Corporate Finance Studies", "General Interest",
-  "anr",    "reveco",   "Annual Review of Economics", "General Interest",
-  #"nat",    "nature",  "Nature", "General Interest",
-  
+  "bla",    "jfinan", "Journal of Finance", "General Interest",
+  "oup",    "rfinst", "Review of Financial Studies", "General Interest",
+  "eee",    "jfinec", "Journal of Financial Economics", "General Interest",
+  "oup",    "rcorpf", "Review of Corporate Finance Studies", "General Interest",
+  "anr",    "reveco", "Annual Review of Economics", "General Interest",
+  "bin",    "bpeajo", "Brookings Papers on Economic Activity", "General Interest",
 
   #Top Field Journals
   "ucp",    "jlabec", "Journal of Labor Economics (JOLE)", "Top Field Journals (A)",
   "eee",    "pubeco", "Journal of Public Economics", "Top Field Journals (A)",
   "uwp",    "jhriss", "Journal of Human Resources", "Top Field Journals (A)",
   "eee",    "juecon", "Journal of Urban Economics", "Top Field Journals (A)",
-  "eee",    "jaecon",   "Journal of Accounting and Economics", "Top Field Journals (A)",
-  "bla",    "joares",   "Journal of Accounting Research", "Top Field Journals (A)",
-  "spr",    "reaccs",   "Review of Accounting Studies", "Top Field Journals (A)",
-  "eee",    "moneco",   "Journal of Monetary Economics", "Top Field Journals (A)",
-  "eee",    "jfinin",   "Journal of Financial Intermediation", "Top Field Journals (A)",
-  "taf",    "jnlbes",   "Journal of Business and Economic Statistics", "Top Field Journals (A)",
-  "cup",    "jfinqa",     "Journal of Financial and Quantitative Analysis", "Top Field Journals (A)",
-  "inm",    "ormksc",   "Marketing Science", "Top Field Journals (A)",
-  "oup",    "jconrs",   "Journal of Consumer Research", "Top Field Journals (A)",
-  "inm",    "ormsom",   "Manufacturing and Service Operations Management", "Top Field Journals (A)",
+  "eee",    "jaecon", "Journal of Accounting and Economics", "Top Field Journals (A)",
+  "bla",    "joares", "Journal of Accounting Research", "Top Field Journals (A)",
+  "spr",    "reaccs", "Review of Accounting Studies", "Top Field Journals (A)",
+  "eee",    "moneco", "Journal of Monetary Economics", "Top Field Journals (A)",
+  "eee",    "jfinin", "Journal of Financial Intermediation", "Top Field Journals (A)",
+  "taf",    "jnlbes", "Journal of Business and Economic Statistics", "Top Field Journals (A)",
+  "cup",    "jfinqa", "Journal of Financial and Quantitative Analysis", "Top Field Journals (A)",
+  "inm",    "ormksc", "Marketing Science", "Top Field Journals (A)",
+  "oup",    "jconrs", "Journal of Consumer Research", "Top Field Journals (A)",
+  "inm",    "ormsom", "Manufacturing and Service Operations Management", "Top Field Journals (A)",
   "eee",    "jhecon", "Journal of Health Economics", "Top Field Journals (A)",
   "oup",    "ecpoli", "Economic Policy", "General Interest",
   "oup",    "emjrnl", "Econometrics Journal", "Top Field Journals (A)",
@@ -135,8 +134,21 @@ journals <- tribble(
   "eee",    "jeeman", "Journal of Environmental Economics and Management", "Top Field Journals (A)",
   "eee",    "eneeco", "Energy Economics", "Second in Field Journals (B)",
   "eee",    "jetheo", "Journal of Economic Theory (JET)", "Top Field Journals (A)",
-  "oup",    "rasset",   "Review of Asset Pricing Studies", "Top Field Journals (A)",
+  "oup",    "rasset", "Review of Asset Pricing Studies", "Top Field Journals (A)",
   "inm",    "ormnsc", "Managment Science", "Top Field Journals (A)",
+  "wly",    "jmoncb", "Journal of Money, Credit and Banking", "Top Field Journals (A)",
+  "eee",    "inecon", "Journal of International Economics", "Top Field Journals (A)",
+  "eee",    "gamebe", "Games and Economic Behavior", "Top Field Journals (A)",
+  "eee",    "finmar", "Journal of Financial Markets", "Top Field Journals (A)",
+  "red", "issued", "Review of Economic Dynamics", "Top Field Journals (A)",
+  "eee", "dyncon", "Journal of Economic Dynamics and Control", "Top Field Journals (A)",
+  "eee", "corfin", "Journal of Corporate Finance", "Top Field Journals (A)",
+  "oup", "jfinec", "Journal of Financial Econometrics", "Top Field Journals (A)",
+  "kap", "enreec", "Environmental & Resource Economics", "Top Field Journals (A)",
+  "ijc", "ijcjou", "International Journal of Central Banking", "Top Field Journals (A)",
+  "pal", "imfecr", "IMF Economic Review", "Top Field Journals (A)",
+  "wly", "ajagec", "American Journal of Agricultural Economics", "Top Field Journals (A)",
+  "aen", "journl", "The Energy Journal", "Top Field Journals (A)",
   
   #Solid B Journals
   "eee",    "eecrev", "European Economic Review", "Second in Field Journals (B)",
@@ -148,25 +160,46 @@ journals <- tribble(
   "kap",    "jecgro", "Journal of Economic Growth", "Second in Field Journals (B)",
   "eee",    "econom", "Journal of Econometrics", "Second in Field Journals (B)",
   "oup",    "jecgeo", "Journal of Economic Geography", "Second in Field Journals (B)",
-  "wly",    "quante",  "Quantitative Economics", "Second in Field Journals (B)",  
-  "eee",    "deveco",  "Journal of Development Economics", "Second in Field Journals (B)",  
-  "rje",    "randje",  "RAND Journal of Economics", "Second in Field Journals (B)",  
-  "the",    "publsh",  "Theoretical Economics", "Second in Field Journals (B)",  
-  "kap",    "sbusec",  "Small Business Economics", "Second in Field Journals (B)",  
-  "wly",    "iecrev",  "International Economic Review", "Second in Field Journals (B)",  
-  "kap",    "expeco",  "Experimental Economics", "Second in Field Journals (B)",  
-  "eee",    "enepol",  "Energy Policy", "Second in Field Journals (B)",  
+  "wly",    "quante", "Quantitative Economics", "Second in Field Journals (B)",  
+  "eee",    "deveco", "Journal of Development Economics", "Second in Field Journals (B)",  
+  "bla",    "randje", "RAND Journal of Economics", "Second in Field Journals (B)",  
+  "the",    "publsh", "Theoretical Economics", "Second in Field Journals (B)",  
+  "kap",    "sbusec", "Small Business Economics", "Second in Field Journals (B)",  
+  "wly",    "iecrev", "International Economic Review", "Second in Field Journals (B)",  
+  "kap",    "expeco", "Experimental Economics", "Second in Field Journals (B)",  
+  "eee",    "enepol", "Energy Policy", "Second in Field Journals (B)",  
+  "bla",    "jecsur", "Journal of Economic Surveys", "Second in Field Journals (B)",
+  "eee",    "wdevel", "World Development", "Second in Field Journals (B)",
+  "eee",    "ecoedu", "Economics of Education Review", "Second in Field Journals (B)",
+  "kap",    "pubcho", "Public Choice", "Second in Field Journals (B)",
+  "eee", "jimfin", "Journal of International Money and Finance", "Second in Field Journals (B)",
+  "eee", "empfin", "Journal of Empirical Finance", "Second in Field Journals (B)",
+  "eee", "finsta", "Journal of Financial Stability", "Second in Field Journals (B)",
+  "taf", "emetrv", "Econometric Reviews", "Second in Field Journals (B)",
+  "bla", "ecinqu", "Economic Inquiry", "Second in Field Journals (B)",
+  "eee", "jcecon", "Journal of Comparative Economics", "Second in Field Journals (B)",
+  "eee", "ecmode", "Economic Modelling", "Second in Field Journals (B)",
   
   #Other Journals
   "bpj",    "germec",  "German Economic Review", "Other Journals",
   "eee",    "ecolet",  "Economic Letters", "Other Journals",
-  "spr",    "jregsc",  "Journal of Regional Science", "Other Journals",  
+  "bla",    "jregsc",  "Journal of Regional Science", "Other Journals",  
   "oup",    "oxecpp",  "Oxford Economic Papers", "Other Journals",  
   "spr",    "empeco",  "Empirical Economics", "Other Journals",  
   "oup",    "wbecrv",  "The World Bank Economic Review", "Other Journals",
   "bla",    "obuest",  "Oxford Bulletin of Economics and Statistics", "Other Journals",
   "bla",    "scandj",  "Scandinavian Journal of Economics", "Other Journals",
   "jns",    "jbstat",  "Journal of Economics and Statistics (Jahrbuecher fuer Nationaloekonomie und Statistik)","Other Journals",
+  "jss",    "jstsof",  "Journal of Statistical Software", "Other Journals",
+  "sae",    "ilrrev",  "ILR Review", "Other Journals",                                                     
+  "bla",    "revinw",  "Review of Income and Wealth",  "Other Journals",  
+  "eee",    "regeco", "Regional Science and Urban Economics", "Other Journals",  
+  "wly",    "hlthec", "Health Economics",  "Other Journals",
+  "bla",    "stratm", "Strategic Management Journal", "Other Journals",
+  "eee",    "jbvent", "Journal of Business Venturing", "Other Journals",
+  "bla",    "jorssb", "Journal of the Royal Statistical Society: Series B", "Other Journals",
+  "taf",    "regstd", "Regional Studies", "Other Journals",
+  "iab",     "iabjlr", "Journal of Labour Market Research", "Other Journals",
   
   #WP Series
   "nbr",     "nberwo",  "NBER Working Papers", "Working Paper Series",
@@ -175,11 +208,17 @@ journals <- tribble(
   "diw",     "diwwpp",  "Discussion Papers of DIW Berlin", "Working Paper Series",
   "iza",     "izadps",  "IZA Discussion Papers", "Working Paper Series",
   "ces",     "ceswps",  "CESifo Working Paper Series", "Working Paper Series",
-  "iab",     "iabdpa",  "IAB Discussion Papers", "Working Paper Series"
+  "iab",     "iabdpa",  "IAB Discussion Papers", "Working Paper Series",
+  "iab",     "iabfme",  "IAB FDZ Methodenreport", "Working Paper Series",
+  "bos",     "iedwpr", "Boston University -Institute for Economic Development Working Paper","Working Paper Series",
+  "bfi",     "wpaper", "Becker Friedman Institute for Research In Economics Working Papers",  "Working Paper Series",                                
+  "pri",     "indrel",  "Princeton Industrial Relations Section Working Papers.",  "Working Paper Series",       
+  "ehl",     "lserod",  "LSE Research Online Documents on Economics",  "Working Paper Series",
+  "arx",      "papers",  "arXiv.org", "Working Paper Series"
 )
 
 #Test whether some journals are double in the list
-journals |>
+journals |> 
   count(repec_id=paste0(archive,":",journal)) |>
   filter(n!=1)
 
@@ -201,13 +240,16 @@ if(FALSE){
     transmute(path=as.character(path)) |>
     map_dfr(fs::dir_info) |>
     transmute(path=as.character(path),
+              has_files = map_lgl(path, ~length(list.files(.x)) > 0),
               archive = str_extract(path,"REPEC/[A-Za-z]{3}") |> 
                    str_extract("/[A-Za-z]{3}")  |>
                    str_remove("/"),
               journal =  str_extract(path,"REPEC/[A-Za-z]{3}/[A-Za-z]{6}") |>
                 str_extract("/[A-Za-z]{6}")  |>
                 str_remove("/")
-              ) 
+              ) |>
+    filter(has_files) |>
+    select(-has_files) 
   
   read_csv(here::here("journals.csv")) |>
     select(-category) |>
