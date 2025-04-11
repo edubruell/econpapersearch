@@ -10,7 +10,7 @@ pacman::p_load(duckdb,
                here,
                shinycssloaders)
 
-#dbpath <- normalizePath("/srv/shiny-server/econpapersearch/articles_ollama.duckdb")
+#dbpath <- normalizePath("/srv/shiny-server/econpapersearch/articles_ollama_vss.duckdb")
 dbpath <- "articles_ollama_vss.duckdb"
 
 db_state <- file.info(dbpath)$mtime |> 

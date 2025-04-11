@@ -8,7 +8,6 @@ pacman::p_load(here,
 #                LOAD vss;")
 
 con <- dbConnect(duckdb(), dbdir = "articles_ollama_vss.duckdb")
-
 #Old database
 #con2 <- dbConnect(duckdb(), dbdir = "articles_ollama.duckdb")
 #df <- dbReadTable(con2, "articles")
