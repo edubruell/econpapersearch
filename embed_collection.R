@@ -7,6 +7,7 @@ pacman::p_load(here,
 #dbExecute(con, "INSTALL vss;
 #                LOAD vss;")
 
+sys_parser <- "perl"
 con <- dbConnect(duckdb(), dbdir = "articles_ollama_vss.duckdb")
 #Old database
 #con2 <- dbConnect(duckdb(), dbdir = "articles_ollama.duckdb")
@@ -14,7 +15,7 @@ con <- dbConnect(duckdb(), dbdir = "articles_ollama_vss.duckdb")
 
 
 # Handle the case where the articles table doesn't exist yet
-if (dbExistsTable(con, "articles")) {
+if ("articles" %in% dbListTables(con)) {
   processed_handles <- dbGetQuery(con, "SELECT Handle FROM articles")$Handle
 } else {
   # Create the articles table if it doesn't exist
@@ -42,7 +43,6 @@ if (dbExistsTable(con, "articles")) {
   processed_handles <- character(0)
 }
 
-sys_parser <- "perl"
 
 # 1. Data Cleaning
 #---------------------------------------------------------------
