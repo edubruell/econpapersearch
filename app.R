@@ -11,7 +11,7 @@ pacman::p_load(duckdb,
                shinycssloaders)
 
 #dbpath <- normalizePath("/srv/shiny-server/econpapersearch/articles_ollama_vss.duckdb")
-dbpath <- "articles_ollama_vss.duckdb"
+dbpath <- "articles.duckdb"
 
 db_state <- file.info(dbpath)$mtime |> 
   as.character() |>
@@ -19,7 +19,7 @@ db_state <- file.info(dbpath)$mtime |>
 
 pool <- pool::dbPool(
   drv = duckdb::duckdb(dbpath),
-  dbdir = "articles_ollama_vss.duckdb",
+  dbdir = "articles.duckdb",
   max_connections = 5
 )
 
@@ -139,12 +139,7 @@ server <- function(input, output, session) {
     req(input$query)
     res <- semantic_sort(input$query, pool, input$journal_filter, input$min_year,input$max_k)
     
-    #Fix bibtex - move this to pre-processing on next database update
-    res <- res |>
-      mutate(journal_bt = paste0("journal = {",journal,"}"),
-             bib_tex = str_replace(bib_tex,"journal = \\{\\}",journal_bt),
-             bib_tex = str_replace_all(bib_tex, "\\n\\s*\\n", "\n"))
-    
+
     res |> mutate(
       Similarity = paste0(
         round(1-similarity, 4), "<br/>",

@@ -7,12 +7,14 @@ pacman::p_load(here,
 #dbExecute(con, "INSTALL vss;
 #                LOAD vss;")
 
+
 sys_parser <- "perl"
-con <- dbConnect(duckdb(), dbdir = "articles_ollama_vss.duckdb")
+con <- dbConnect(duckdb(), dbdir = "articles.duckdb")
 #Old database
 #con2 <- dbConnect(duckdb(), dbdir = "articles_ollama.duckdb")
 #df <- dbReadTable(con2, "articles")
 
+dbExecute(con, "LOAD vss;")
 
 # Handle the case where the articles table doesn't exist yet
 if ("articles" %in% dbListTables(con)) {
@@ -163,8 +165,12 @@ if(sys_parser == "perl"){
                           journal_code = journal,
                           journal = long_name,
                           category), 
-              by = c("archive","journal_code")) 
-
+              by = c("archive","journal_code")) |>
+    mutate(journal_bt = paste0("journal = {",journal,"}"),
+           bib_tex = str_replace(bib_tex,"journal = \\{\\}",journal_bt),
+           bib_tex = str_replace_all(bib_tex, "\\n\\s*\\n", "\n")) |>
+    select(-journal_bt)
+  
   article_urls <- collection_all_files |>
     select(Handle,file) |>
     unnest(file) |>
@@ -186,29 +192,29 @@ if(sys_parser == "perl"){
 
 
 process_batch <- function(batch, con, num_batches){
-    current_batch <- unique(batch$batch)
-    glue("Processing batch {current_batch} of {num_batches}") |> cat("\n")
-    
-    # Generate embeddings
-    emb_result <- batch$abstract |>
-      ollama_embedding(.model="mxbai-embed-large")
-      #mistral_embedding()
-   
-    # Combine with original data
-    batch_with_embeddings <- batch |>
-      bind_cols(emb_result |> select(-input))
-    
-    # Insert into DuckDB using dbplyr
-    batch_with_embeddings |>
-      copy_to(
-        con, 
-        df = _, 
-        name = "temp_batch", 
-        temporary = TRUE,
-        overwrite = TRUE
-      )
-    
-    dbExecute(con, "
+  current_batch <- unique(batch$batch)
+  glue("Processing batch {current_batch} of {num_batches}") |> cat("\n")
+  
+  # Generate embeddings
+  emb_result <- batch$abstract |>
+    ollama_embedding(.model="mxbai-embed-large")
+  #mistral_embedding()
+  
+  # Combine with original data
+  batch_with_embeddings <- batch |>
+    bind_cols(emb_result |> select(-input))
+  
+  # Insert into DuckDB using dbplyr
+  batch_with_embeddings |>
+    copy_to(
+      con, 
+      df = _, 
+      name = "temp_batch", 
+      temporary = TRUE,
+      overwrite = TRUE
+    )
+  
+  dbExecute(con, "
     INSERT INTO articles 
     SELECT 
       Handle, title, abstract, pages, vol, issue, number, 
@@ -216,8 +222,8 @@ process_batch <- function(batch, con, num_batches){
       category, url, authors, bib_tex, embeddings
     FROM temp_batch
   ")
-    
-    dbExecute(con, "DROP TABLE temp_batch")
+  
+  dbExecute(con, "DROP TABLE temp_batch")
 }
 
 to_embed <- cleaned_collection |>
