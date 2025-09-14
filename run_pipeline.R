@@ -39,7 +39,7 @@ run_step <- function(script_name, step_description) {
 
 # Run the three main steps in sequence
 log_info("=== STEP 1: RePEc FTP SYNCHRONIZATION ===")
-sync_success <- run_step("sync_ftp_archive.R", "RePEc FTP synchronization")
+sync_success <- run_step("sync_rsync_archive.R", "RePEc rsync synchronization")
 
 # Only continue if previous step succeeded
 if (sync_success) {

@@ -2,80 +2,6 @@ pacman::p_load(here,
                curl,
                tidyverse)
 
-sync_repec_folder <- function(.archive, .journal = NULL) {
-  browser()
-  if (is.na(.journal)) .journal <- NULL
-  # Construct FTP URL
-  ftp_url <- if (is.null(.journal)) {
-    paste0("/opt/ReDIF/RePEc/", .archive, "/")
-  } else {
-    paste0("/opt/ReDIF/RePEc/", .archive, "/", .journal, "/")
-  }
-  
-  # Construct local directory path
-  local_path <- if (is.null(.journal)) {
-    here("RePEc", .archive)
-  } else {
-    here("RePEc", .archive, .journal)
-  }
-  
-  # Ensure local directory exists
-  if (!dir.exists(local_path)) {
-    dir.create(local_path, recursive = TRUE)
-  }
-  
-  # Ensure proper quoting of paths
-  ftp_url_quoted <- shQuote(ftp_url)
-  local_path_quoted <- shQuote(normalizePath(local_path, mustWork = FALSE))
-  
-  # Construct lftp command (no FTP prefix in mirror command)
-  cmd <- sprintf(
-    'lftp ftp://anonymous:@ftp.repec.org -e "mirror --parallel=4 --verbose %s %s; bye"',
-    ftp_url_quoted, local_path_quoted
-  )
-  
-  # Execute the command using system()
-  system(cmd, intern = TRUE, ignore.stderr = FALSE)
-  
-  invisible(NULL)
-}
-
-
-#h <- curl::new_handle(dirlistonly = TRUE)
-## Open connection
-#con <- curl::curl("ftp://anonymous:@all.repec.org/RePEc/all/", "r", h)
-## Read file list
-#file_list <- readLines(con, warn = FALSE) 
-#close(con)
-#file_list |>
-#  purrr::keep(~str_detect(.x,"oup"))
-## Download the file
-#url <- "ftp://anonymous:@all.repec.org/RePEc/all/ouparch.rdf"
-#local_path <- here("ouparch.rdf")
-#download.file(url, local_path, mode = "wb")
-
-repec_ftp_listing <- function(.archive, .journal = NULL) {
-  # Construct FTP URL based on whether .journal is provided
-  ftp_url <- if (is.null(.journal)) {
-    paste0("ftp://anonymous:@ftp.repec.org/opt/ReDIF/RePEc/", .archive, "/")
-  } else {
-    paste0("ftp://anonymous:@ftp.repec.org/opt/ReDIF/RePEc/", .archive, "/", .journal, "/")
-  }
-  
-  # Initialize cURL handle
-  h <- curl::new_handle(dirlistonly = TRUE)
-  
-  # Open connection
-  con <- curl::curl(ftp_url, "r", h)
-  
-  # Read file list
-  file_list <- readLines(con, warn = FALSE)  # Suppress warnings if empty
-  close(con)
-  
-  # Return file list
-  file_list
-}
-
 
 journals <- tribble(
   ~archive, ~journal, ~long_name, ~category, ~sjr_id,
@@ -291,44 +217,40 @@ journals |>
 #Write journals to disk 
 journals |> write_csv(here::here("journals.csv"))
 
+sync_repec_folder <- function(.archive, .journal = NULL,
+                              dest_root = here::here("RePEc"),
+                              rsync_bin = "/opt/homebrew/bin/rsync") {
+  if (is.na(.journal)) .journal <- NULL
+  if (!file.exists(rsync_bin)) rsync_bin <- "rsync"  # fallback if needed
+  
+  module <- if (is.null(.journal))
+    sprintf("RePEc-ReDIF/%s/", .archive)
+  else
+    sprintf("RePEc-ReDIF/%s/%s/", .archive, .journal)
+  
+  src <- sprintf("rsync.repec.org::%s", module)
+  
+  # Build/normalize destination
+  dest <- if (is.null(.journal)) file.path(dest_root, .archive)
+  else file.path(dest_root, .archive, .journal)
+  dir.create(dest, recursive = TRUE, showWarnings = FALSE)
+  dest <- normalizePath(dest, winslash = "/", mustWork = FALSE)
+  
+  # Run rsync *from* the destination so DEST is just "./"
+  # (no spaces to parse, no need for `--` separator)
+  withr::with_dir(dest, {
+    args <- c("-av", "-s", "--delete", "--contimeout=20", src, "./")
+    status <- system2(rsync_bin, args)
+    if (status != 0) stop("rsync failed with status ", status)
+  })
+  
+  invisible(dest)
+}
+
+
 read_csv(here::here("journals.csv")) |>
   select(-category,-sjr_id) |>
   pwalk(function(archive, journal, long_name) {
     message("Syncing: ", long_name)
     sync_repec_folder(archive, journal)  
   })
-
-
-#Manually load incomplete syncs after first load
-if(FALSE){
-  loaded_journals <- fs::dir_info(here("REPEC")) |>
-    transmute(path=as.character(path)) |>
-    map_dfr(fs::dir_info) |>
-    transmute(path=as.character(path),
-              has_files = map_lgl(path, ~length(list.files(.x)) > 0),
-              archive = str_extract(path,"REPEC/[A-Za-z]{3}") |> 
-                   str_extract("/[A-Za-z]{3}")  |>
-                   str_remove("/"),
-              journal =  str_extract(path,"REPEC/[A-Za-z]{3}/[A-Za-z]{6}") |>
-                str_extract("/[A-Za-z]{6}")  |>
-                str_remove("/")
-              ) |>
-    filter(has_files) |>
-    select(-has_files) 
-  
-  read_csv(here::here("journals.csv")) |>
-    select(-category) |>
-    left_join(loaded_journals) |>
-    filter(is.na(path)) |>
-    select(-path) |>
-    pwalk(function(archive, journal, long_name) {
-      message("Syncing: ", long_name)
-      sync_repec_folder(archive, journal)  
-    })
-} 
-  
-#repec_ftp_listing("oup", "restud")
-
-#sync_repec_folder("oup", "restud")  
-
-
