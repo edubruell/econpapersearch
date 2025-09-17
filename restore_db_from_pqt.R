@@ -11,10 +11,10 @@ latest_pqt_archive <- here("pqt") |>
   slice(1) |>
   pull(path)
 
-
+dbpath <- normalizePath("/srv/shiny-server/econpapersearch/articles_toc.duckdb")
 
 #Recreate a database from a parquet dump
-con <- dbConnect(duckdb(), dbdir = "articles.duckdb")
+con <- dbConnect(duckdb(), dbdir = dbpath)
 dbExecute(con, "LOAD vss;")
 
 dbExecute(con, glue("

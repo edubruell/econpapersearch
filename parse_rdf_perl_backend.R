@@ -11,6 +11,10 @@ r_has_name <- function(.x, .name) {
   FALSE
 }
 
+lib <- path.expand("~/.perl5/lib/perl5")
+arch <- file.path(lib, "darwin-thread-multi-2level")  # matches your perl -V archname
+Sys.setenv(PERL5LIB = paste(c(lib, arch), collapse = ":"))
+
 #This file uses the REDIF-perl scripts by repec to auomatically parse to json which
 #is easier to work with from R than raw redif files. It is slower than the original redif-parser
 #I hacked together but more reliable.
@@ -61,7 +65,12 @@ post_process_entry <- function(entry){
   
   authors_list <- entry$author |> 
     keep(~r_has_name(.x,"name")) |>
-    map_chr(~.x$name[[1]]) |> 
+    map_chr(~{ name_field <- .x$name[[1]]
+        if(is.null(.x$name[[1]])){
+         name_field <- "" 
+        } 
+      name_field
+      }) |> 
     list()
   
   authors_string <- unlist(authors_list) |> str_c(collapse="; ")
@@ -83,7 +92,10 @@ post_process_entry <- function(entry){
     year <- str_sub(cr,1,4)
     is_series <- TRUE
   }
-  
+  if(entry$TYPE=="ReDIF-Chapter 1.0"){
+    year     <- entry$year[[1]]
+    is_series <- FALSE
+  }
   #Files (optional)
   file <- tibble()
   if(!is.null(entry$file)){
@@ -203,7 +215,7 @@ if (!dir.exists(here("rds_archivep"))) {
 }
 
 updated_today <- fs::dir_info(here("rds_archivep")) |>
-  filter(as_date(modification_time) == today()) |>
+  filter(as_date(modification_time) == today()) |>#ymd("2025-09-14")) |>
   transmute(repo = str_remove(path,(here("rds_archivep")))|>
               str_remove("/") |>
               str_remove(".rds")) |>
@@ -212,7 +224,7 @@ updated_today <- fs::dir_info(here("rds_archivep")) |>
 
 paper_archives <- redif_files |> 
   #Uncomment this line if working incrementally
-  #filter(!(repo_id %in% updated_today)) |>
+  filter(!(repo_id %in% updated_today)) |>
   arrange() |>
   group_by(repo_id) |>
   group_split()
@@ -234,7 +246,7 @@ paper_archives |>
   })
 
 
-#parse_redif_perl("/Users/ebr/Seafile/Meine Bibliothek/git_projects/econpapersearch/RePEc/qsh/wpaper/wpaper_50166.rdf") %>%
-#  .[620] |>
+#parse_redif_perl("/Users/ebr/Seafile/Meine Bibliothek/git_projects/econpapersearch/RePEc/sae/woemps/10.1177_09500170251317407.rdf") %>%
+#  .[1] |>
 #  map_dfr(post_process_entry)
   

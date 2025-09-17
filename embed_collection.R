@@ -13,7 +13,7 @@ con <- dbConnect(duckdb(), dbdir = "articles.duckdb")
 #Old database
 #con2 <- dbConnect(duckdb(), dbdir = "articles_ollama.duckdb")
 #df <- dbReadTable(con2, "articles")
-
+#dbExecute(con, "INSTALL vss;")
 dbExecute(con, "LOAD vss;")
 
 # Handle the case where the articles table doesn't exist yet

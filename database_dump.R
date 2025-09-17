@@ -5,7 +5,7 @@ pacman::p_load(here,
                duckdb)
 
 #Dump a database to parquet
-con <- dbConnect(duckdb(), dbdir = "articles_ollama_vss.duckdb")
+con <- dbConnect(duckdb(), dbdir = "articles.duckdb")
 timestamp <- format(Sys.time(), "%Y%m%d_%H%M%S")
 output_path <- here::here("pqt", glue("articles_{timestamp}.parquet"))
 dir.create(here::here("pqt"), showWarnings = FALSE)
