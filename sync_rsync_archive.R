@@ -201,11 +201,26 @@ journals <- tribble(
   "ces",     "ceswps",  "CESifo Working Paper Series", "Working Paper Series", NA,  
   "iab",     "iabdpa",  "IAB Discussion Papers", "Working Paper Series", NA,  
   "iab",     "iabfme",  "IAB FDZ Methodenreport", "Working Paper Series", NA,  
-  "bos",     "iedwpr", "Boston University -Institute for Economic Development Working Paper","Working Paper Series", NA,  
-  "bfi",     "wpaper", "Becker Friedman Institute for Research In Economics Working Papers",  "Working Paper Series",   NA,                                
+  "bos",     "iedwpr",  "Boston University -Institute for Economic Development Working Paper","Working Paper Series", NA,  
+  "bfi",     "wpaper",  "Becker Friedman Institute for Research In Economics Working Papers",  "Working Paper Series",   NA,                                
   "pri",     "indrel",  "Princeton Industrial Relations Section Working Papers.",  "Working Paper Series", NA,         
+  "cpr",     "ceprdp",  "CEPR Discussion Papers",  "Working Paper Series", NA,    
   "ehl",     "lserod",  "LSE Research Online Documents on Economics",  "Working Paper Series", NA,  
   "arx",     "papers",  "arXiv.org", "Working Paper Series", NA,  
+  "cwl",     "cwldpp",  "Cowles Foundation Discussion Papers", "Working Paper Series", NA,   
+  "hbs",     "wpaper",  "Harvard Business School Working Papers", "Working Paper Series", NA,   
+  "mit",     "worpap",  "MIT Working Papers", "Working Paper Series", NA,   
+  #"hal",     "journl",  "HAL Post-Print",  "Working Paper Series", NA,   
+  #"hal",     "wpaper",  "HAL Working Paper",  "Working Paper Series", NA,   
+  "pra",     "mprapa",  "MPRA Paper",  "Working Paper Series", NA,   
+  "hrv",     "faseco",  "Harvard University Department of Economics Scholarly Articles",  "Working Paper Series", NA,   
+  #"hal",     "pseptp",  "PSE-Ecole d'économie de Paris (Postprint)",  "Working Paper Series", NA,  
+  "cep",     "cepdps",  "CEP Discussion Papers",  "Working Paper Series", NA,  
+  "upf",     "upfgen",  "Economics Working Papers, Universitat Pompeu Fabra",  "Working Paper Series", NA,
+  "ecb",     "ecbwps",  "European Central Bank Working Paper Series",  "Working Paper Series", NA,
+  "fip",     "fedpwp",  "Federal Reserve Bank of Philadelphia Working Papers",  "Working Paper Series", NA,
+  "wbk",     "wbrwps",  "The World Bank - Policy Research Working Paper Series",  "Working Paper Series", NA,
+  "crm",     "wpaper",  "RFBerlin Discussion Paper Series",  "Working Paper Series", NA,
 )
 
 #Test whether some journals are double in the list
@@ -239,7 +254,7 @@ sync_repec_folder <- function(.archive, .journal = NULL,
   # Run rsync *from* the destination so DEST is just "./"
   # (no spaces to parse, no need for `--` separator)
   withr::with_dir(dest, {
-    args <- c("-av", "-s", "--delete", "--contimeout=20", src, "./")
+    args <- c("-av", "-s", "--delete", "--contimeout=20", "--exclude=*.pdf", src, "./")
     status <- system2(rsync_bin, args)
     if (status != 0) stop("rsync failed with status ", status)
   })
@@ -254,3 +269,7 @@ read_csv(here::here("journals.csv")) |>
     message("Syncing: ", long_name)
     sync_repec_folder(archive, journal)  
   })
+
+
+
+

@@ -114,8 +114,36 @@ semantic_sort_api <- function(.query,
   res
 }
 
+# ============ SMALL STATS FUNCTIONS ============ #
+
+get_journals_entries <- function(.pool) {
+  con <- poolCheckout(.pool)
+  res <- DBI::dbGetQuery(con, "SELECT journal, COUNT(*) as n FROM articles GROUP BY journal ORDER BY journal") |> as_tibble()
+  poolReturn(con)
+  res
+}
 
 
+get_total_articles <- function(.pool) {
+  con <- poolCheckout(.pool)
+  res <- DBI::dbGetQuery(con, "SELECT COUNT(*) as n FROM articles")
+  poolReturn(con)
+  res$n
+}
+
+get_category_counts <- function(.pool) {
+  con <- poolCheckout(.pool)
+  res <- DBI::dbGetQuery(con, "SELECT category, COUNT(*) as n FROM articles GROUP BY category ORDER BY n DESC") |> as_tibble()
+  poolReturn(con)
+  res
+}
+
+get_last_updated <- function() {
+  db_age <- file.info(dbpath)$mtime |> 
+    as.character() |>
+    str_extract("\\d{4}-\\d{2}-\\d{2}")
+  db_age
+}
 
 # ================= PLUMBER API ================= #
 
@@ -152,4 +180,29 @@ function(query,
   
   res$similarity_score <- round(1 - res$similarity, 5)
   res |> arrange(desc(similarity_score))
+}
+
+
+#* Get journal entry counts
+#* @get /stats/journals
+function() {
+  get_journals_entries(pool)
+}
+
+#* Get total article count
+#* @get /stats/total
+function() {
+  list(total_articles = get_total_articles(pool))
+}
+
+#* Get category counts
+#* @get /stats/categories
+function() {
+  get_category_counts(pool)
+}
+
+#* Get last database update date
+#* @get /stats/last_updated
+function() {
+  list(last_updated = get_last_updated())
 }
