@@ -1,5 +1,7 @@
 # econpapersearch: Semantic Article Search for Economic Research
 
+> ⚠️ **This is an old version of [eddyspapers](https://github.com/edubruell/eddyspapers). based purely and shiny** Both the REPEC integration and frontend have changed massively from this version.
+
 This Shiny app provides a proof-of-concept **semantic search engine** for economic research articles indexed in RePEc. It allows users to find relevant papers based on abstract similarity using **LLM-powered embeddings**.   
 🔍 **Try it now:** [https://econpapers.eduard-bruell.de/](https://econpapers.eduard-bruell.de/)
 
